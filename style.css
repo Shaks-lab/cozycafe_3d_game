@@ -1,0 +1,378 @@
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+:root {
+  --cream: #fff6e9;
+  --muted: #c7b9a8;
+  --brown: #553626;
+  --gold: #e7b66c;
+  --glass: rgba(35, 28, 24, 0.86);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #211b17;
+  color: var(--cream);
+  font-family: "DM Sans", sans-serif;
+}
+
+#game {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#topbar {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 76px;
+  padding: 0 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, rgba(20, 15, 12, .82), transparent);
+  pointer-events: none;
+}
+
+.brand {
+  font-family: "Playfair Display", serif;
+  font-size: 23px;
+  font-weight: 700;
+}
+
+.brand span, h1 span {
+  color: var(--gold);
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+
+.stat strong {
+  color: var(--cream);
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+#order-panel {
+  position: absolute;
+  z-index: 2;
+  top: 95px;
+  right: 24px;
+  width: 250px;
+  padding: 20px;
+  border: 1px solid rgba(255, 246, 233, .13);
+  border-radius: 16px;
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+#customer-name {
+  margin-top: 13px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#order-name {
+  margin-top: 5px;
+  font-family: "Playfair Display", serif;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+#patience-track {
+  height: 4px;
+  margin-top: 17px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, .12);
+}
+
+#patience-bar {
+  height: 100%;
+  width: 100%;
+  background: #b4cb91;
+  transition: width .2s linear, background .2s;
+}
+
+#order-status {
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+#crosshair span {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  width: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: white;
+  box-shadow: 0 1px 3px #000;
+}
+
+#crosshair span:last-child {
+  transform: rotate(90deg);
+}
+
+#interaction {
+  position: absolute;
+  bottom: 105px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  background: var(--glass);
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity .15s;
+  pointer-events: none;
+}
+
+#interaction.visible {
+  opacity: 1;
+}
+
+.key, kbd {
+  padding: 5px 8px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 5px;
+  background: rgba(255,255,255,.1);
+  font-size: 11px;
+}
+
+#help {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 11px;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+}
+
+kbd {
+  margin-right: 4px;
+  color: var(--cream);
+  font-family: inherit;
+}
+
+.overlay {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(24, 18, 14, .72);
+  backdrop-filter: blur(8px);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.start-card {
+  width: min(100%, 460px);
+  padding: 38px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 24px;
+  background: linear-gradient(145deg, #49362b, #28211d);
+  box-shadow: 0 30px 100px rgba(0,0,0,.4);
+  text-align: center;
+}
+
+.coffee-icon {
+  margin-bottom: 18px;
+  font-size: 42px;
+}
+
+h1 {
+  margin: 12px 0;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(32px, 5vw, 46px);
+  line-height: 1.15;
+}
+
+.start-card p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.instructions {
+  margin: 28px 0;
+  padding: 15px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.17);
+  text-align: left;
+}
+
+.instructions div {
+  display: flex;
+  gap: 15px;
+  padding: 9px 0;
+  color: var(--gold);
+  font-size: 11px;
+}
+
+.instructions span {
+  color: var(--cream);
+  font-size: 12px;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--gold);
+  color: #342319;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s, background .15s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  background: #f4c987;
+}
+
+button span {
+  margin-left: 8px;
+}
+
+.start-card small {
+  display: block;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.pause-card {
+  max-width: 380px;
+}
+
+#toast {
+  position: absolute;
+  z-index: 3;
+  top: 82px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  padding: 11px 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  background: var(--glass);
+  color: var(--cream);
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+}
+
+#toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 600px) {
+  #topbar {
+    height: 65px;
+    padding: 0 15px;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .stat {
+    font-size: 8px;
+  }
+
+  .stat strong {
+    font-size: 13px;
+  }
+
+  #order-panel {
+    top: 78px;
+    right: 10px;
+    width: 190px;
+    padding: 14px;
+  }
+
+  #order-name {
+    font-size: 20px;
+  }
+
+  #help {
+    gap: 8px;
+    font-size: 9px;
+  }
+
+  #help span:nth-child(2) {
+    display: none;
+  }
+
+  .start-card {
+    padding: 25px;
+  }
+}

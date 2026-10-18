@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cozy Café 3D</title>
+  <link rel="stylesheet" href="style.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module" src="game.js"></script>
+</head>
+<body>
+  <div id="game">
+    <div id="topbar">
+      <div class="brand">☕ Cozy Café <span>3D</span></div>
+      <div class="stats">
+        <div class="stat">CASH <strong id="cash">$50.00</strong></div>
+        <div class="stat">SERVED <strong id="served">0</strong></div>
+        <div class="stat">DAY <strong>01</strong></div>
+      </div>
+    </div>
+
+    <div id="order-panel">
+      <div class="eyebrow">CUSTOMER ORDER</div>
+      <div id="customer-name">Waiting for a customer</div>
+      <div id="order-name">Your café is opening...</div>
+      <div id="patience-track"><div id="patience-bar"></div></div>
+      <div id="order-status">Ready to open</div>
+    </div>
+
+    <div id="crosshair"><span></span><span></span></div>
+
+    <div id="interaction">
+      <span class="key">E</span>
+      <span id="interaction-text">Interact</span>
+    </div>
+
+    <div id="toast"></div>
+
+    <div id="help">
+      <span><kbd>W A S D</kbd> Move</span>
+      <span><kbd>MOUSE</kbd> Look</span>
+      <span><kbd>E</kbd> Interact</span>
+      <span><kbd>ESC</kbd> Pause</span>
+    </div>
+
+    <div id="start-screen" class="overlay">
+      <div class="start-card">
+        <div class="coffee-icon">☕</div>
+        <div class="eyebrow">YOUR LITTLE DREAM</div>
+        <h1>Cozy Café <span>3D</span></h1>
+        <p>Good coffee. Happy customers. Your own little corner of the world.</p>
+
+        <div class="instructions">
+          <div>01 <span>Explore your café</span></div>
+          <div>02 <span>Prepare the customer's drink</span></div>
+          <div>03 <span>Serve them and earn cash</span></div>
+        </div>
+
+        <button id="start-button">Open the café <span>→</span></button>
+        <small>WASD to move · Mouse to look · E to interact</small>
+      </div>
+    </div>
+
+    <div id="pause-screen" class="overlay hidden">
+      <div class="start-card pause-card">
+        <div class="eyebrow">TAKE A BREATHER</div>
+        <h1>Café paused</h1>
+        <p>Your café is waiting for you.</p>
+        <button id="resume-button">Back to work <span>→</span></button>
+      </div>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+      <div class="start-card">
+        <div class="coffee-icon">☕</div>
+        <div class="eyebrow">CLOSING TIME</div>
+        <h1>Lovely work!</h1>
+        <p id="day-summary">Your café has closed for the day.</p>
+        <button id="restart-button">Open tomorrow <span>→</span></button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
