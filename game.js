@@ -23,13 +23,22 @@ const ui = {
   startButton: $("start-button"),
   resumeButton: $("resume-button"),
   restartButton: $("restart-button"),
-  summary: $("day-summary")
+  summary: $("day-summary"),
+  day: $("day-number")
 };
+
+// ---------- Game state ----------
 
 // ---------- Game state ----------
 
 let cash = 50;
 let served = 0;
+let totalCustomersServed = 0;
+let dayNumber = 1;
+
+let dailySales = 0;
+let dailyTips = 0;
+
 let active = false;
 let paused = false;
 let gameOver = false;
@@ -37,6 +46,8 @@ let dayTime = 180;
 let customerWait = 0;
 let nextCustomerIn = 0;
 let toastTimer = 0;
+
+const SAVE_KEY = "cozyCafe3D_save_v1";
 
 let currentOrder = null;
 let preparedDrink = false;
@@ -46,6 +57,52 @@ let promptVisible = false;
 
 const keys = {};
 const clock = new THREE.Clock();
+// ---------- Save and load progress ----------
+
+function saveGame() {
+  const saveData = {
+    cash,
+    dayNumber,
+    totalCustomersServed
+  };
+
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+  } catch (error) {
+    console.error("Could not save game progress:", error);
+  }
+}
+
+function loadGame() {
+  try {
+    const savedData = localStorage.getItem(SAVE_KEY);
+
+    if (!savedData) {
+      return;
+    }
+
+    const data = JSON.parse(savedData);
+
+    if (Number.isFinite(data.cash) && data.cash >= 0) {
+      cash = data.cash;
+    }
+
+    if (Number.isInteger(data.dayNumber) && data.dayNumber >= 1) {
+      dayNumber = data.dayNumber;
+    }
+
+    if (
+      Number.isInteger(data.totalCustomersServed) &&
+      data.totalCustomersServed >= 0
+    ) {
+      totalCustomersServed = data.totalCustomersServed;
+    }
+
+    console.log("Game progress loaded successfully.");
+  } catch (error) {
+    console.error("Could not load saved game progress:", error);
+  }
+}
 
 const PLAYER_HEIGHT = 1.65;
 const PLAYER_SPEED = 3.6;
@@ -553,9 +610,21 @@ function serveCustomer() {
   const revenue = currentOrder.price;
   const tip = customerWait > 20 ? currentOrder.tip : 0;
 
+  // Update the player's balance
   cash += revenue + tip;
-  served += 1;
 
+  // Update today's statistics
+  served += 1;
+  dailySales += revenue;
+  dailyTips += tip;
+
+  // Update lifetime statistics
+  totalCustomersServed += 1;
+
+  // Save the player's progress
+  saveGame();
+
+  // Update the HUD immediately
   ui.cash.textContent = "$" + cash.toFixed(2);
   ui.served.textContent = served;
 
@@ -713,10 +782,16 @@ function endDay() {
   }
 
   ui.summary.textContent =
-    "You served " + served + " customers and earned $" +
-    (cash - 50).toFixed(2) +
-    " in sales and tips. Your final balance is $" +
-    cash.toFixed(2) + ".";
+  "DAY " + dayNumber + " COMPLETE!\n\n" +
+  "Customers served today: " + served + "\n" +
+  "Total customers served: " + totalCustomersServed + "\n\n" +
+  "Sales: $" + dailySales.toFixed(2) + "\n" +
+  "Tips: $" + dailyTips.toFixed(2) + "\n" +
+  "Total earnings today: $" +
+  (dailySales + dailyTips).toFixed(2) + "\n\n" +
+  "Final balance: $" + cash.toFixed(2);
+
+  saveGame();
 
   ui.end.classList.remove("hidden");
   ui.interaction.classList.remove("visible");
@@ -725,11 +800,16 @@ function endDay() {
 // ---------- Start, pause and restart ----------
 
 function startGame() {
-  cash = 50;
+  // Keep the player's saved balance and lifetime progress
   served = 0;
+  dailySales = 0;
+  dailyTips = 0;
+
   dayTime = 180;
   customerWait = 0;
   nextCustomerIn = 1;
+  toastTimer = 0;
+
   active = true;
   paused = false;
   gameOver = false;
@@ -737,13 +817,15 @@ function startGame() {
   camera.position.set(0, PLAYER_HEIGHT, 5.2);
   camera.rotation.set(0, 0, 0);
 
-  ui.cash.textContent = "$50.00";
+  ui.cash.textContent = "$" + cash.toFixed(2);
   ui.served.textContent = "0";
+  ui.day.textContent = String(dayNumber).padStart(2, "0");
   ui.start.classList.add("hidden");
   ui.pause.classList.add("hidden");
   ui.end.classList.add("hidden");
 
   renderer.domElement.requestPointerLock();
+  saveGame();
 }
 
 function pauseGame() {
@@ -759,9 +841,19 @@ function resumeGame() {
   renderer.domElement.requestPointerLock();
 }
 
+function startNextDay() {
+  if (!gameOver) {
+    return;
+  }
+
+  dayNumber += 1;
+  saveGame();
+  startGame();
+}
+
 ui.startButton.addEventListener("click", startGame);
 ui.resumeButton.addEventListener("click", resumeGame);
-ui.restartButton.addEventListener("click", startGame);
+ui.restartButton.addEventListener("click", startNextDay);
 
 document.addEventListener("pointerlockchange", () => {
   if (
@@ -844,6 +936,14 @@ function animate() {
 
   renderer.render(scene, camera);
 }
+
+// Load saved progress before starting the game
+loadGame();
+
+// Display the saved balance
+ui.cash.textContent = "$" + cash.toFixed(2);
+ui.served.textContent = "0";
+ui.day.textContent = String(dayNumber).padStart(2, "0");
 
 // Build everything and launch the render loop
 buildCafe();
