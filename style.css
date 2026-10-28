@@ -376,3 +376,71 @@ button span {
     padding: 25px;
   }
 }
+
+/* ---------- Upgrade shop ---------- */
+
+#shop-screen .shop-card {
+  width: min(900px, calc(100vw - 32px));
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.upgrade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+  text-align: left;
+}
+
+.upgrade-item {
+  padding: 18px;
+  border: 1px solid rgba(198, 155, 91, 0.35);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.upgrade-item h3 {
+  margin: 0 0 10px;
+}
+
+.upgrade-item p {
+  min-height: 48px;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+.upgrade-price {
+  margin: 14px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e8bf83;
+}
+
+.upgrade-item button {
+  width: 100%;
+}
+
+.upgrade-item button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+#close-shop-button {
+  margin-top: 8px;
+}
+
+@media (max-width: 520px) {
+  #shop-screen .shop-card {
+    padding: 20px;
+  }
+
+  .upgrade-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .upgrade-item p {
+    min-height: auto;
+  }
+}

@@ -24,7 +24,11 @@ const ui = {
   resumeButton: $("resume-button"),
   restartButton: $("restart-button"),
   summary: $("day-summary"),
-  day: $("day-number")
+  day: $("day-number"),
+    shop: $("shop-screen"),
+  shopButton: $("shop-button"),
+  upgradeItems: $("upgrade-items"),
+  closeShopButton: $("close-shop-button")
 };
 
 // ---------- Game state ----------
@@ -35,6 +39,48 @@ let cash = 50;
 let served = 0;
 let totalCustomersServed = 0;
 let dayNumber = 1;
+
+// ---------- Café upgrades ----------
+let upgrades = {
+  betterMachine: false,
+  fasterEquipment: false,
+  customerService: false,
+  betterTips: false,
+  premiumBeans: false
+};
+
+const upgradeCatalog = [
+  {
+    id: "betterMachine",
+    name: "Better Coffee Machine",
+    price: 100,
+    description: "Earn 10% more from every drink."
+  },
+  {
+    id: "fasterEquipment",
+    name: "Faster Equipment",
+    price: 150,
+    description: "Customers arrive more frequently."
+  },
+  {
+    id: "customerService",
+    name: "Customer Service",
+    price: 200,
+    description: "Customers wait 15 seconds longer."
+  },
+  {
+    id: "betterTips",
+    name: "Better Tips",
+    price: 250,
+    description: "Earn 50% bigger tips for quick service."
+  },
+  {
+    id: "premiumBeans",
+    name: "Premium Coffee Beans",
+    price: 350,
+    description: "Earn 20% more from every drink."
+  }
+];
 
 let dailySales = 0;
 let dailyTips = 0;
@@ -63,7 +109,8 @@ function saveGame() {
   const saveData = {
     cash,
     dayNumber,
-    totalCustomersServed
+    totalCustomersServed,
+    upgrades
   };
 
   try {
@@ -83,6 +130,12 @@ function loadGame() {
 
     const data = JSON.parse(savedData);
 
+    if (data.upgrades && typeof data.upgrades === "object") {
+  upgrades = {
+    ...upgrades,
+    ...data.upgrades
+     };
+    }
     if (Number.isFinite(data.cash) && data.cash >= 0) {
       cash = data.cash;
     }
@@ -515,7 +568,8 @@ function newCustomer() {
 
   currentCustomer = createCustomer();
   preparedDrink = false;
-  customerWait = CUSTOMER_PATIENCE;
+  customerWait = CUSTOMER_PATIENCE +
+  (upgrades.customerService ? 15 : 0);
 
   const name = customerNames[
     Math.floor(Math.random() * customerNames.length)
@@ -555,12 +609,16 @@ function removeCustomer() {
   ui.status.textContent = "Next customer arriving soon";
   ui.patience.style.width = "100%";
 
-  nextCustomerIn = 2.5;
+  nextCustomerIn = upgrades.fasterEquipment ? 1.5 : 2.5;
 }
 
 function updatePatience() {
+  const maxPatience = CUSTOMER_PATIENCE +
+  (upgrades.customerService ? 15 : 0);
+
   const percentage = Math.max(
-    0, customerWait / CUSTOMER_PATIENCE * 100
+    0,
+    customerWait / maxPatience * 100
   );
 
   ui.patience.style.width = percentage + "%";
@@ -607,8 +665,14 @@ function prepareDrink() {
 function serveCustomer() {
   if (!currentCustomer || !currentOrder || !preparedDrink) return;
 
-  const revenue = currentOrder.price;
-  const tip = customerWait > 20 ? currentOrder.tip : 0;
+ const revenueMultiplier =
+  (upgrades.betterMachine ? 1.10 : 1) *
+  (upgrades.premiumBeans ? 1.20 : 1);
+
+const revenue = currentOrder.price * revenueMultiplier;
+
+const baseTip = customerWait > 20 ? currentOrder.tip : 0;
+const tip = upgrades.betterTips ? baseTip * 1.5 : baseTip;
 
   // Update the player's balance
   cash += revenue + tip;
@@ -797,6 +861,81 @@ function endDay() {
   ui.interaction.classList.remove("visible");
 }
 
+// ---------- Upgrade shop ----------
+
+function openUpgradeShop() {
+  if (!gameOver) return;
+
+  ui.end.classList.add("hidden");
+  ui.shop.classList.remove("hidden");
+
+  renderUpgradeShop();
+}
+
+function closeUpgradeShop() {
+  ui.shop.classList.add("hidden");
+  ui.end.classList.remove("hidden");
+}
+
+function renderUpgradeShop() {
+  ui.upgradeItems.innerHTML = upgradeCatalog.map((upgrade) => {
+    const owned = upgrades[upgrade.id];
+    const canAfford = cash >= upgrade.price;
+
+    let buttonText = "Buy for $" + upgrade.price;
+
+    if (owned) {
+      buttonText = "Purchased";
+    } else if (!canAfford) {
+      buttonText = "Not enough cash";
+    }
+
+    return `
+      <div class="upgrade-item">
+        <h3>${upgrade.name}</h3>
+        <p>${upgrade.description}</p>
+        <div class="upgrade-price">$${upgrade.price}</div>
+        <button
+          data-upgrade="${upgrade.id}"
+          ${owned || !canAfford ? "disabled" : ""}
+        >
+          ${buttonText}
+        </button>
+      </div>
+    `;
+  }).join("");
+}
+
+function purchaseUpgrade(upgradeId) {
+  const upgrade = upgradeCatalog.find(
+    (item) => item.id === upgradeId
+  );
+
+  if (!upgrade) return;
+
+  if (upgrades[upgradeId]) {
+    return;
+  }
+
+  if (cash < upgrade.price) {
+    return;
+  }
+
+  cash -= upgrade.price;
+  upgrades[upgradeId] = true;
+
+  saveGame();
+
+  ui.cash.textContent = "$" + cash.toFixed(2);
+
+  ui.summary.textContent = ui.summary.textContent.replace(
+  /Final balance: \$[\d.]+/,
+  "Final balance: $" + cash.toFixed(2)
+);
+
+  renderUpgradeShop();
+}
+
 // ---------- Start, pause and restart ----------
 
 function startGame() {
@@ -854,6 +993,18 @@ function startNextDay() {
 ui.startButton.addEventListener("click", startGame);
 ui.resumeButton.addEventListener("click", resumeGame);
 ui.restartButton.addEventListener("click", startNextDay);
+
+ui.shopButton.addEventListener("click", openUpgradeShop);
+
+ui.closeShopButton.addEventListener("click", closeUpgradeShop);
+
+ui.upgradeItems.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-upgrade]");
+
+  if (!button) return;
+
+  purchaseUpgrade(button.dataset.upgrade);
+});
 
 document.addEventListener("pointerlockchange", () => {
   if (
